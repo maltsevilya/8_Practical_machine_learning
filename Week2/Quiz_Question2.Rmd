@@ -1,0 +1,124 @@
+---
+title: "Тест. Вопрос 2"
+author: "Ilya Maltsev"
+date: '9 июня 2017 г '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+```
+
+## Qustion 2
+
+```{r q2 load data}
+library(AppliedPredictiveModeling)
+data(concrete)
+library(caret)
+set.seed(1000)
+inTrain = createDataPartition(mixtures$CompressiveStrength, p = 3/4)[[1]]
+training = mixtures[inTrain,]
+testing = mixtures[-inTrain,]
+library(Hmisc)
+```
+
+Make a plot of the outcome (CompressiveStrength) versus the index of the 
+samples. Color by each of the variables in the data set (you may find the 
+cut2() function in the Hmisc package useful for turning continuous covariates 
+into factors). What do you notice in these plots?
+
+Possible answers:
+
+1. There is a non-random pattern in the plot of the outcome versus index that 
+does not appear to be perfectly explained by any predictor suggesting a 
+variable may be missing.
+
+2. There is a non-random pattern in the plot of the outcome versus index.
+
+3. There is a non-random pattern in the plot of the outcome versus index that 
+is perfectly explained by the Age variable.
+
+4. There is a non-random pattern in the plot of the outcome versus index that 
+is perfectly explained by the FlyAsh variable. *Yes?*
+
+### Compressive Strength versus Index colored by variables
+
+```{r colored by Cement}
+plot(1:dim(training)[1], training$CompressiveStrength, 
+     col = cut2(training$Cement, g = 3))
+```
+
+```{r colored by Blast Furnace Slag}
+plot(1:dim(training)[1], training$CompressiveStrength, 
+     col = cut2(training$BlastFurnaceSlag, g = 3))
+```
+
+```{r colored by Fly Ash}
+plot(1:dim(training)[1], training$CompressiveStrength, 
+     col = cut2(training$FlyAsh, g = 3))
+```
+
+```{r colored by Water}
+plot(1:dim(training)[1], training$CompressiveStrength, 
+     col = cut2(training$Water, g = 4))
+```
+
+```{r colored by Superplasticizer}
+plot(1:dim(training)[1], training$CompressiveStrength, 
+     col = cut2(training$Superplasticizer, g = 3))
+```
+
+```{r colored by Coarse Aggregate}
+plot(1:dim(training)[1], training$CompressiveStrength, 
+     col = cut2(training$CoarseAggregate, g = 3))
+```
+
+```{r colored by Fine Aggregate}
+plot(1:dim(training)[1], training$CompressiveStrength, 
+     col = cut2(training$FineAggregate, g = 3))
+```
+
+```{r colored by Age}
+plot(1:dim(training)[1], training$CompressiveStrength, 
+     col = cut2(training$Age, g = 3))
+```
+
+### Compressive Strength versus Age
+
+```{r Strength versus Age}
+library(splines)
+bsBasis = bs(training$Age, df = 3)
+plot(training$Age, training$CompressiveStrength)
+points(training$Age, 
+      predict(lm(CompressiveStrength ~ bsBasis, data = training), 
+              newdata = training), 
+      col = "red")
+
+plot(training$Age, training$CompressiveStrength)
+# I(Age*Age) + Age
+points(training$Age, 
+      predict(lm(CompressiveStrength ~ I(atan(Age/25)) + I(Age*Age), data = training), 
+              newdata = training), 
+      col = "red")
+summary(lm(CompressiveStrength ~ I(atan(Age/25)) + I(Age*Age) + Cement + Water + BlastFurnaceSlag + Superplasticizer, data = training))
+```
+
+### Model
+
+```{r q2 model}
+# training2 = training
+# training2$fBlastFurnaceSlag = cut2(training$BlastFurnaceSlag, g = 3)
+# training2$fSuperplasticizer = cut2(training$Superplasticizer, g = 3)
+# training2$bsBasis1 = bsBasis[,1]
+# training2$bsBasis2 = bsBasis[,2]
+# training2$bsBasis3 = bsBasis[,3]
+# lm5 = lm(CompressiveStrength ~ Age + Cement + Water + 
+#             fBlastFurnaceSlag + fSuperplasticizer, 
+#         data = training2)
+# summary(lm5)
+
+lm5 = train(CompressiveStrength ~ Cement + Age + Water + 
+                BlastFurnaceSlag + Superplasticizer, method = "lm", data = training)
+pred = predict(lm5, testing)
+qplot(CompressiveStrength, pred, data = testing)
+```

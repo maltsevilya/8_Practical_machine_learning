@@ -1,0 +1,56 @@
+---
+title: "Тест. Вопрос 1"
+author: "Ilya Maltsev"
+date: '9 июня 2017 г '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Вопрос 1
+
+```{r q1 load data, eval=FALSE}
+library(caret)
+library(AppliedPredictiveModeling)
+data(AlzheimerDisease)
+```
+
+Which of the following commands will create non-overlapping training and test sets with about 50% of the observations assigned to each?
+
+```{r option1, eval=FALSE}
+adData = data.frame(diagnosis, predictors)
+train = createDataPartition(diagnosis, p = 0.50, list=FALSE)
+test = createDataPartition(diagnosis, p = 0.50, list=FALSE)
+```
+
+```{r option2, eval=FALSE}
+adData = data.frame(diagnosis,predictors)
+trainIndex = createDataPartition(diagnosis, p = 0.50)
+training = adData[trainIndex,]
+testing = adData[-trainIndex,]
+```
+
+```{r option3, eval=FALSE}
+adData = data.frame(diagnosis,predictors)
+trainIndex = createDataPartition(diagnosis, p = 0.50, list=FALSE)
+training = adData[trainIndex,]
+testing = adData[-trainIndex,]
+```
+
+```{r option4, eval=FALSE}
+adData = data.frame(predictors)
+trainIndex = createDataPartition(diagnosis,p=0.5,list=FALSE)
+training = adData[trainIndex,]
+testing = adData[-trainIndex,]
+```
+
+Ответ:
+
+```{r q1 answer, eval=FALSE}
+adData = data.frame(diagnosis,predictors)
+trainIndex = createDataPartition(diagnosis, p = 0.50, list=FALSE)
+training = adData[trainIndex,]
+testing = adData[-trainIndex,]
+```
