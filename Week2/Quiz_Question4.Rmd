@@ -1,0 +1,63 @@
+---
+title: "Тест. Вопрос 4"
+author: "Ilya Maltsev"
+date: '9 июня 2017 г '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Вопрос 4
+
+Load the Alzheimer's disease data using the commands:
+
+```{r load data}
+library(caret, quietly = TRUE)
+library(AppliedPredictiveModeling, quietly = TRUE)
+set.seed(3433)
+data(AlzheimerDisease)
+adData = data.frame(diagnosis,predictors)
+inTrain = createDataPartition(adData$diagnosis, p = 3/4)[[1]]
+training = adData[ inTrain,]
+testing = adData[-inTrain,]
+```
+
+Find all the predictor variables in the training set that begin with IL. 
+Perform principal components on these variables with the preProcess() function 
+from the caret package. Calculate the number of principal components needed 
+to capture 90% of the variance. How many are there?
+
+Ответы:
+
+1. 11
+2. 7
+3. 9
+4. 8
+
+```{r selecting IL predictors}
+ILnames <- names(training)[startsWith(names(training), "IL")]
+ILtraining <- training[, c("diagnosis", ILnames)]
+ILtesting <- testing[, c("diagnosis", ILnames)]
+```
+
+```{r correlations}
+M <- abs(cor(ILtesting[, -1]))
+diag(M) <- 0
+which(M > 0.7, arr.ind = TRUE)
+```
+
+```{r correlations. plot}
+plot(ILtesting[, c("IL_3")], ILtesting[, c("IL_16")])
+```
+
+```{r pca analysis}
+prcomp.res <- prcomp(ILtraining[, -c(1)], scale. = TRUE)
+s <- summary(prcomp.res)
+print(s)
+cumulativeProportion <- s$importance[3,]
+which.min(cumulativeProportion <= 0.9)
+```
+
+Ответ: 9
