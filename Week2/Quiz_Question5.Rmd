@@ -1,0 +1,85 @@
+---
+title: "Тест. Вопрос 5"
+author: "Ilya Maltsev"
+date: '9 июня 2017 г '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Вопрос 5
+
+Load the Alzheimer's disease data using the commands:
+    
+```{r load data}
+library(caret)
+library(AppliedPredictiveModeling)
+set.seed(3433)
+data(AlzheimerDisease)
+adData = data.frame(diagnosis,predictors)
+inTrain = createDataPartition(adData$diagnosis, p = 3/4)[[1]]
+training = adData[ inTrain,]
+testing = adData[-inTrain,]
+```
+
+Create a training data set consisting of only the predictors with variable 
+names beginning with IL and the diagnosis. Build two predictive models, one 
+using the predictors as they are and one using PCA with principal components 
+explaining 80% of the variance in the predictors. Use method="glm" in the 
+train function.
+
+What is the accuracy of each method in the test set? Which is more accurate?
+
+1. Non-PCA Accuracy: 0.75
+PCA Accuracy: 0.71
+
+2. Non-PCA Accuracy: 0.72
+PCA Accuracy: 0.71
+
+3. Non-PCA Accuracy: 0.72
+PCA Accuracy: 0.65
+
+4. Non-PCA Accuracy: 0.65
+PCA Accuracy: 0.72
+
+```{r selecting IL predictors}
+ILnames <- names(training)[startsWith(names(training), "IL")]
+ILtraining <- training[, c("diagnosis", ILnames)]
+ILtesting <- testing[, c("diagnosis", ILnames)]
+```
+
+```{r train with all IL predictors}
+fit.all <- train(diagnosis ~ ., method = "glm", data = ILtraining)
+fit.all.prediction <- predict(fit.all, ILtesting[, -c(1)])
+fit.all.confusionMatrix <- confusionMatrix(ILtesting$diagnosis, fit.all.prediction)
+print(fit.all.confusionMatrix)
+fit.all.accuracy <- fit.all.confusionMatrix$overall["Accuracy"]
+```
+
+```{r pca analysis}
+prcomp.res <- prcomp(ILtraining[, -c(1)], scale. = TRUE)
+s <- summary(prcomp.res)
+cumulativeProportion <- s$importance[3,]
+latestImportantComponent <- which.min(cumulativeProportion <= 0.8)
+```
+
+```{r train with pca}
+preProc <- preProcess(ILtraining[, -c(1)], method = "pca", 
+                      pcaComp = latestImportantComponent)
+trainPCA <- predict(preProc, ILtraining[, -c(1)])
+trainPCA$diagnosis <- ILtraining$diagnosis
+fit.pca <- train(diagnosis ~ ., method = "glm", data = trainPCA)
+testPCA <- predict(preProc, ILtesting[, -c(1)])
+fit.pca.prediction <- predict(fit.pca, testPCA)
+fit.pca.confusionMatrix <- confusionMatrix(ILtesting$diagnosis, fit.pca.prediction)
+print(fit.pca.confusionMatrix)
+fit.pca.accuracy <- fit.pca.confusionMatrix$overall["Accuracy"]
+```
+
+```{r answer}
+print(paste("NON-PCA", round(fit.all.accuracy, 2)))
+print(paste("PCA", round(fit.pca.accuracy, 2)))
+```
+Ответ: NON-PCA - 0.65, PCA - 0.72
