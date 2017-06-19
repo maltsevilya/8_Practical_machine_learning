@@ -1,0 +1,115 @@
+---
+title: "Тест. Вопрос 1"
+author: "Илья Мальцев"
+date: '17 июня 2017 г '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+```
+
+## Вопрос
+
+For this quiz we will be using several R packages. R package versions change 
+over time, the right answers have been checked using the following versions 
+of the packages.
+
+    AppliedPredictiveModeling: v1.1.6
+    caret: v6.0.47
+    ElemStatLearn: v2012.04-0
+    pgmm: v1.1
+    rpart: v4.1.8
+
+If you aren't using these versions of the packages, your answers may not 
+exactly match the right answer, but hopefully should be close.
+
+Load the cell segmentation data from the AppliedPredictiveModeling package 
+using the commands:
+
+```{r, load data}
+library(AppliedPredictiveModeling, quietly = TRUE)
+data(segmentationOriginal)
+library(caret, quietly = TRUE)
+```
+
+    1. Subset the data to a training set and testing set based on the Case 
+    variable in the data set.
+    2. Set the seed to 125 and fit a CART model with the rpart method using all 
+    predictor variables and default caret settings.
+    3. In the final model what would be the final model prediction for cases with 
+    the following variable values:
+        a. TotalIntenCh2 = 23,000; FiberWidthCh1 = 10; PerimStatusCh1=2
+        b. TotalIntenCh2 = 50,000; FiberWidthCh1 = 10; VarIntenCh4 = 100
+        c. TotalIntenCh2 = 57,000; FiberWidthCh1 = 8; VarIntenCh4 = 100
+        d. FiberWidthCh1 = 8; VarIntenCh4 = 100; PerimStatusCh1=2
+
+    1.
+        a. PS
+        b. Not possible to predict
+        c. PS
+        d. Not possible to predict
+    2. 
+        a. Not possible to predict
+        b. WS
+        c. PS
+        d. PS
+    3. 
+        a. PS
+        b. WS
+        c. PS
+        d. WS
+    4. 
+        a. PS
+        b. WS
+        c. PS
+        d. Not possible to predict
+
+## Решение
+
+```{r subset training and testing sets}
+trainingSet <- segmentationOriginal[which(segmentationOriginal$Case == 'Train'),]
+testingSet <- segmentationOriginal[which(segmentationOriginal$Case == 'Test'),]
+```
+
+```{r settings}
+set.seed(125)
+```
+
+```{r fit model}
+fit <- train(Class ~ ., trainingSet, method = "rpart")
+```
+
+```{r plot fit}
+library(rpart.plot)
+rpartmodel <- rpart(Class ~ ., data = trainingSet, method = "class")
+rpart.plot(rpartmodel)
+```
+
+```{r predict}
+newdataA <- trainingSet[1,]
+newdataA[,"TotalIntenCh2"] = 23000
+newdataA[,"FiberWidthCh1"] = 10
+newdataA[,"PerimStatusCh1"] = 2
+predictionA <- predict(fit, newdata = newdataA)
+
+newdataB <- trainingSet[1,]
+newdataB[,"TotalIntenCh2"] = 50000
+newdataB[,"FiberWidthCh1"] = 10
+newdataB[,"VarIntenCh4"] = 100
+predictionB <- predict(fit, newdata = newdataB)
+
+newdataC <- trainingSet[1,]
+newdataC[,"TotalIntenCh2"] = 57000
+newdataC[,"FiberWidthCh1"] = 8
+newdataC[,"VarIntenCh4"] = 2
+predictionC <- predict(fit, newdata = newdataC)
+
+newdataD <- trainingSet[1,]
+newdataD[,"FiberWidthCh1"] = 8
+newdataD[,"VarIntenCh4"] = 100
+newdataD[,"PerimStatusCh1"] = 2
+predictionD <- predict(fit, newdata = newdataD)
+
+print(paste(predictionA, predictionB, predictionC, predictionD))
+```
