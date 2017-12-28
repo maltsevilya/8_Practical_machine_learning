@@ -1,0 +1,87 @@
+---
+title: "Тест. Вопрос 1"
+author: "Илья Мальцев"
+date: '25 декабря 2017 г '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Load the vowel.train and vowel.test data sets:
+
+```{r load data}
+library(ElemStatLearn)
+data(vowel.train)
+data(vowel.test)
+```
+
+Set the variable y to be a factor variable in both the training and test set. Then set the seed to 33833. Fit (1) a random forest predictor relating the factor variable y to the remaining variables and (2) a boosted predictor using the "gbm" method. Fit these both with the train() command in the caret package.
+
+What are the accuracies for the two approaches on the test data set? What is the accuracy among the test set samples where the two methods agree?
+
+    1. RF Accuracy = 0.9881
+    GBM Accuracy = 0.8371
+    Agreement Accuracy = 0.9983
+
+    2. RF Accuracy = 0.6082
+    GBM Accuracy = 0.5152
+    Agreement Accuracy = 0.5152
+
+    3. RF Accuracy = 0.9987
+    GBM Accuracy = 0.5152
+    Agreement Accuracy = 0.9985
+    
+    4. RF Accuracy = 0.6082
+    GBM Accuracy = 0.5152
+    Agreement Accuracy = 0.6361
+
+
+```{r prepare}
+w.vowel.train = as.data.frame(vowel.train)
+w.vowel.train$y = as.factor(w.vowel.train$y)
+w.vowel.test = as.data.frame(vowel.test)
+w.vowel.test$y = as.factor(w.vowel.test$y)
+```
+
+```{r set seed}
+set.seed(33833)
+```
+
+```{r setup cluster}
+library(parallel)
+library(doParallel)
+cluster <- makeCluster(detectCores() - 1)
+registerDoParallel(cluster)
+```
+
+```{r rf}
+library(caret)
+rfFit = train(y ~ ., w.vowel.train, method = "rf")
+```
+
+```{r boost}
+boostFit = train(y ~ ., w.vowel.train, method = "gbm")
+```
+
+```{r destroy cluster}
+stopCluster(cluster)
+registerDoSEQ()
+```
+
+```{r accuracies}
+rfPred = predict(rfFit, newdata = w.vowel.test)
+rfAccurary = sum(rfPred == w.vowel.test$y) / length(w.vowel.test$y)
+boostPred = predict(boostFit, newdata = w.vowel.test)
+boostAccurary = sum(boostPred == w.vowel.test$y) / length(w.vowel.test$y)
+agreementIndex = rfPred==boostPred
+agreementAccuracy = sum(w.vowel.test$y[agreementIndex] == rfPred[agreementIndex]) / length(agreementIndex[agreementIndex])
+print(paste("RF accurary: ", round(rfAccurary, 2)))
+print(paste("GBM accurary: ", round(boostAccurary, 2)))
+print(paste("Agreement accurary: ", round(agreementAccuracy, 2)))
+```
+
+Ответ: 4
+
+Точные значения не совпадают
