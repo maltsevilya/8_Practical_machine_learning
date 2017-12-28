@@ -4,3 +4,6 @@
 .Ruserdata
 *_cache
 *_files
+*.mp4
+subtitle*.txt
+subtitle*.vtt
