@@ -1,0 +1,53 @@
+---
+title: "Тест. Вопрос 3"
+author: "Илья Мальцев"
+date: '23 декабря 2017 г '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Вопрос
+
+Load the olive oil data using the commands:
+```{r, load data}
+library(pgmm)
+data(olive)
+olive = olive[,-1]
+```
+
+These data contain information on 572 different Italian olive oils from multiple regions in Italy. Fit a classification tree where Area is the outcome variable. Then predict the value of area for the following data frame using the tree command with all defaults
+
+```{r}
+newdata = as.data.frame(t(colMeans(olive)))
+```
+
+What is the resulting prediction? Is the resulting prediction strange? Why or why not?
+
+    1. 2.783. It is strange because Area should be a qualitative variable - but tree is reporting the average value of Area as a numeric variable in the leaf predicted for newdata
+    
+    2. 4.59965. There is no reason why the result is strange.
+    
+    3. 0.005291005 0 0.994709 0 0 0 0 0 0. The result is strange because Area is a numeric variable and we should get the average within each leaf.
+    
+    4. 2.783. There is no reason why this result is strange.
+
+## Ответ
+
+```{r fit}
+library(caret, quietly = TRUE)
+modelFit = train(Area ~ ., olive, method = "rpart")
+```
+
+```{r plot fit}
+plot(modelFit$finalModel)
+text(modelFit$finalModel)
+```
+
+```{r predict}
+predict(modelFit, newdata = newdata)
+```
+
+Ответ - 1.

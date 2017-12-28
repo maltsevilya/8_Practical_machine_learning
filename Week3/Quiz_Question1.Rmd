@@ -59,7 +59,7 @@ library(caret, quietly = TRUE)
         b. WS
         c. PS
         d. WS
-    4. 
+    4. *
         a. PS
         b. WS
         c. PS
@@ -81,9 +81,8 @@ fit <- train(Class ~ ., trainingSet, method = "rpart")
 ```
 
 ```{r plot fit}
-library(rpart.plot)
-rpartmodel <- rpart(Class ~ ., data = trainingSet, method = "class")
-rpart.plot(rpartmodel)
+plot(fit$finalModel)
+text(fit$finalModel)
 ```
 
 ```{r predict}
@@ -113,3 +112,4 @@ predictionD <- predict(fit, newdata = newdataD)
 
 print(paste(predictionA, predictionB, predictionC, predictionD))
 ```
+

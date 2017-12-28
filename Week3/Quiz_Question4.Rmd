@@ -1,0 +1,72 @@
+---
+title: "Тест. Вопрос 4"
+author: "Илья Мальцев"
+date: '23 декабря 2017 г '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Вопрос
+
+Load the South Africa Heart Disease Data and create training and test sets with the following code:
+
+```{r prepare data}
+library(ElemStatLearn)
+data(SAheart)
+set.seed(8484)
+train = sample(1:dim(SAheart)[1],size=dim(SAheart)[1]/2,replace=F)
+trainSA = SAheart[train,]
+testSA = SAheart[-train,]
+```
+
+Then set the seed to 13234 and fit a logistic regression model (method="glm", be sure to specify family="binomial") with Coronary Heart Disease (chd) as the outcome and age at onset, current alcohol consumption, obesity levels, cumulative tabacco, type-A behavior, and low density lipoprotein cholesterol as predictors. Calculate the misclassification rate for your model using this function and a prediction on the "response" scale:
+
+```{r misclassification function}
+missClass = function(values,prediction) {
+    sum(((prediction > 0.5)*1) != values)/length(values)
+}
+```
+
+What is the misclassification rate on the training set? What is the misclassification rate on the test set?
+
+    1. Test Set Misclassification: 0.35
+    Training Set: 0.31
+
+    2. Test Set Misclassification: 0.27
+    Training Set: 0.31
+
+    3. Test Set Misclassification: 0.31
+    Training Set: 0.27
+
+    4. Test Set Misclassification: 0.43
+    Training Set: 0.31
+    
+## Решение
+
+```{r seed}
+set.seed(13234)
+```
+
+```{r model fit}
+library(caret)
+modelFit = train(chd ~ age + alcohol + obesity + tobacco + typea + ldl, 
+                 data = trainSA, 
+                 method = "glm", family = "binomial")
+```
+
+```{r prediction}
+predictionTest = predict(modelFit, testSA)
+predictionTrain = predict(modelFit, trainSA)
+```
+
+```{r misclassification results}
+testMiss = missClass(testSA$chd, predictionTest)
+trainMiss = missClass(trainSA$chd, predictionTrain)
+print(testMiss)
+print(trainMiss)
+```
+
+Ответ: 3
