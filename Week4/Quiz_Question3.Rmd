@@ -1,0 +1,45 @@
+---
+title: "Тест. Вопрос 3"
+author: "Илья Мальцев"
+date: '29 декабря 2017 г '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+```
+
+Load the concrete data with the commands:
+
+```{r load data}
+set.seed(3523)
+library(caret, quietly = TRUE)
+library(AppliedPredictiveModeling)
+data(concrete)
+inTrain = createDataPartition(concrete$CompressiveStrength, p = 3/4)[[1]]
+training = concrete[ inTrain,]
+testing = concrete[-inTrain,]
+```
+
+Set the seed to 233 and fit a lasso model to predict Compressive Strength. 
+Which variable is the last coefficient to be set to zero as the penalty increases? 
+(Hint: it may be useful to look up ?plot.enet).
+
+    1. BlastFurnaceSlag
+    2. FineAggregate
+    3. Cement
+    4. CoarseAggregate
+
+```{r seed}
+set.seed(233)
+```
+
+```{r fit lasso}
+library(elasticnet)
+xx = as.matrix(subset(testing, select = -CompressiveStrength))
+yy = testing$CompressiveStrength
+lassoFit = enet(xx, yy, max.steps = 10)
+plot.enet(lassoFit, xvar = "penalty", use.color = TRUE)
+```
+
+Ответ: 3?

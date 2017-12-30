@@ -1,0 +1,45 @@
+---
+title: "Тест. Вопрос 5"
+author: "Илья Мальцев"
+date: '30 декабря 2017 г '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Load the concrete data with the commands:
+
+```{r load data}
+set.seed(3523)
+library(AppliedPredictiveModeling)
+data(concrete)
+inTrain = createDataPartition(concrete$CompressiveStrength, p = 3/4)[[1]]
+training = concrete[ inTrain,]
+testing = concrete[-inTrain,]
+```
+
+Set the seed to 325 and fit a support vector machine using the e1071 package to predict Compressive Strength using the default settings. Predict on the testing set. What is the RMSE?
+
+    1. 107.44
+    2. 6.93
+    3. 35.59
+    4. 6.72
+
+```{r fit}
+set.seed(325)
+library(e1071)
+fit = svm(CompressiveStrength ~ ., data = training)
+```
+
+```{r predict}
+pred = predict(fit, newdata = testing)
+```
+
+```{r rmse}
+sqrt(sum((pred - testing$CompressiveStrength)^2))
+RMSE(pred, testing$CompressiveStrength)
+```
+
+Ответ: 4

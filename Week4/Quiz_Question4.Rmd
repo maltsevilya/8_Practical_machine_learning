@@ -1,0 +1,57 @@
+---
+title: "Тест. Вопрос 4"
+author: "Илья Мальцев"
+date: '30 декабря 2017 г '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Load the data on the number of visitors to the instructors blog from here:
+https://d396qusza40orc.cloudfront.net/predmachlearn/gaData.csv
+
+Using the commands:
+
+```{r load data}
+library(lubridate) # For year() function below
+dat = read.csv("gaData.csv")
+training = dat[year(dat$date) < 2012,]
+testing = dat[(year(dat$date)) > 2011,]
+tstrain = ts(training$visitsTumblr)
+```
+
+Fit a model using the bats() function in the forecast package to the training time series. Then forecast this model for the remaining time points. For how many of the testing points is the true value within the 95% prediction interval bounds?
+
+    1. 92%
+    2. 96%
+    3. 94%
+    4. 100%
+
+```{r fit}
+library(forecast)
+bats <- bats(tstrain, use.parallel = TRUE, num.cores = detectCores() - 1)
+visits.forecast <- forecast(bats)
+```
+
+```{r predict}
+visits.forecast <- forecast(bats, nrow(testing))
+plot(visits.forecast)
+```
+
+```{r}
+# extracting the 95% prediction boundaries
+visits.forecast.lower95 = visits.forecast$lower[,2]
+visits.forecast.upper95 = visits.forecast$upper[,2]
+# see how many of the testing visit counts do actually match
+table ( 
+  (testing$visitsTumblr>visits.forecast.lower95) & 
+  (testing$visitsTumblr<visits.forecast.upper95))
+```
+
+```{r}
+226/nrow(testing)
+```
+
+Ответ: 2

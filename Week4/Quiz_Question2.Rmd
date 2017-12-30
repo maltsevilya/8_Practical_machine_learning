@@ -1,0 +1,94 @@
+---
+title: "Тест. Вопрос 2"
+author: "Илья Мальцев"
+date: '28 декабря 2017 г '
+output: html_document
+---
+
+```{r setup, include=FALSE, cache=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Load the Alzheimer's data using the following commands
+
+```{r load data}
+library(caret)
+library(gbm)
+set.seed(3433)
+library(AppliedPredictiveModeling)
+data(AlzheimerDisease)
+adData = data.frame(diagnosis,predictors)
+inTrain = createDataPartition(adData$diagnosis, p = 3/4)[[1]]
+training = adData[ inTrain,]
+testing = adData[-inTrain,]
+```
+
+Set the seed to 62433 and predict diagnosis with all the other variables using a random forest ("rf"), boosted trees ("gbm") and linear discriminant analysis ("lda") model. Stack the predictions together using random forests ("rf"). What is the resulting accuracy on the test set? Is it better or worse than each of the individual predictions?
+
+    1. Stacked Accuracy: 0.80 is better than random forests and lda and the same as boosting.
+
+    2. Stacked Accuracy: 0.93 is better than all three other methods
+
+    3. Stacked Accuracy: 0.76 is better than random forests and boosting, but not lda.
+
+    4. Stacked Accuracy: 0.88 is better than all three other methods
+
+```{r seed}
+set.seed(62433)
+```
+
+```{r setup cluster}
+library(parallel)
+library(doParallel)
+cluster <- makeCluster(detectCores() - 1)
+registerDoParallel(cluster)
+```
+
+```{r base models}
+rfFit = train(diagnosis ~ ., data = training, method = "rf")
+gbmFit = train(diagnosis ~ ., data = training, method = "gbm")
+ldaFit = train(diagnosis ~ ., data = training, method = "lda")
+```
+
+```{r base models predictions}
+rfPred = predict(rfFit, newdata = testing)
+gbmPred = predict(gbmFit, newdata = testing)
+ldaPred = predict(ldaFit, newdata = testing)
+```
+
+```{r stacked model}
+stackedModelData = data.frame(diagnosis = testing$diagnosis, 
+                              rfPred, 
+                              gbmPred, 
+                              ldaPred)
+stackedModel = train(diagnosis ~ ., data = stackedModelData, method = "rf")
+```
+
+```{r stacked model prediction}
+stackedPred = predict(stackedModel, newdata = testing)
+```
+
+```{r destroy cluster}
+stopCluster(cluster)
+registerDoSEQ()
+```
+
+```{r accuracy}
+accuracy = function(prediction, actual) {
+    sum(prediction == actual) / length(prediction)
+}
+
+rfAcc = accuracy(rfPred, testing$diagnosis)
+gbmAcc = accuracy(gbmPred, testing$diagnosis)
+ldaAcc = accuracy(ldaPred, testing$diagnosis)
+stackedAcc = accuracy(stackedPred, testing$diagnosis)
+```
+
+```{r print}
+print(paste("Random forest accuracy: ", round(rfAcc, 2)))
+print(paste("Boosting accuracy: ", round(gbmAcc, 2)))
+print(paste("LDA accuracy: ", round(ldaAcc, 2)))
+print(paste("Stacked accuracy: ", round(stackedAcc, 2)))
+```
+
+Ответ: 1?
