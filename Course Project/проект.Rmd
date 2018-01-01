@@ -1,0 +1,22 @@
+---
+title: "Курсовой проект"
+author: "Илья Мальцев"
+date: '31 декабря 2017 г '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load data}
+training = read.csv("pml-training.csv")
+testing = read.csv("pml-testing.csv")
+```
+
+```{r fit decision tree model}
+library(caret)
+fit = train(classe ~ ., data = training, method = "rpart")
+pred = predict(fit, newdata = testing)
+
+```
